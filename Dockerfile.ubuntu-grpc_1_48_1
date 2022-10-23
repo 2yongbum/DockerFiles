@@ -1,0 +1,19 @@
+FROM ubuntu:latest
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ="Asia/Seoul"
+
+RUN apt update --fix-missing
+RUN apt -y upgrade
+RUN apt install -y git cmake build-essential autoconf libtool pkg-config
+
+RUN git clone --recurse-submodules -b v1.48.1 --depth 1 --shallow-submodules https://github.com/grpc/grpc
+RUN cd grpc && \
+    mkdir -p cmake/build && \
+    cd cmake/build && \
+    cmake -DgRPC_INSTALL=ON \
+      -DgRPC_BUILD_TESTS=OFF \
+      ../.. && \
+    make -j4 && \
+    make install && \
+    cd -
