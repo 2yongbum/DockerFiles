@@ -17,3 +17,7 @@ RUN yum install -y libstdc++-devel.i686 libgcc.i686 glibc-devel.i686
 RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
 RUN tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz && rm -f go1.21.0.linux-amd64.tar.gz
 RUN echo "export PATH=\$PATH:/usr/local/go/bin" >> /root/.bashrc
+
+RUN yum install -y python3
+RUN pip3 install pexpect click pyyaml
+RUN yum install -y openssh-clients
