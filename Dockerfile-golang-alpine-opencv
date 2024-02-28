@@ -1,0 +1,41 @@
+# The build Stage for OpenCV and GoCV.
+FROM golang:1.19.3-alpine
+
+ENV OPENCV_VERSION "4.6.0"
+# Produce dynamic libraries (.dll, .so, .dylib).
+ENV BUILD_SHARED_LIBS "ON"
+
+# Prerequisites.
+RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache git build-base musl-dev alpine-sdk cmake clang clang-dev make gcc g++ libc-dev linux-headers bash
+
+# Build OpenCV.
+RUN mkdir /tmp/opencv
+WORKDIR /tmp/opencv
+RUN wget -O opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
+RUN unzip opencv.zip
+RUN wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.zip
+RUN unzip opencv_contrib.zip
+RUN mkdir /tmp/opencv/opencv-${OPENCV_VERSION}/build
+
+WORKDIR /tmp/opencv/opencv-${OPENCV_VERSION}/build
+RUN cmake \
+    -D CMAKE_BUILD_TYPE=RELEASE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} \
+    -D OPENCV_EXTRA_MODULES_PATH=/tmp/opencv/opencv_contrib-${OPENCV_VERSION}/modules \
+    -D BUILD_DOCS=OFF \
+    -D BUILD_EXAMPLES=OFF \
+    -D BUILD_TESTS=OFF \
+    -D BUILD_PERF_TESTS=OFF \
+    -D BUILD_opencv_java=NO \
+    -D BUILD_opencv_python=NO \
+    -D BUILD_opencv_python2=NO \
+    -D BUILD_opencv_python3=NO \
+    -D WITH_JASPER=OFF \
+    -D WITH_TBB=ON \
+    -D OPENCV_GENERATE_PKGCONFIG=ON \
+    ..
+RUN make -j$(nproc)
+RUN make install
+RUN rm -rf /tmp/opencv
